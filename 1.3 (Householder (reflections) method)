@@ -2,146 +2,126 @@
 #include <iomanip>
 #include <fstream>
 using namespace std;
-ifstream in("input.txt", ios::in);
+ifstream in("input1.txt", ios::in);
+
 int main()
 {
+    setlocale(LC_ALL, "Russian");
     int n = 0;
     in >> n;
-    double** source = new double* [n]; // матрица на вход
-    double** matr = new double* [n]; 
-    for (int i = 0; i < n; i++)
-    {
-        source[i] = new double[n + 1];
-        matr[i] = new double[n + 1];
-        for (int j = 0; j < (n + 1); j++)
-        {
-            in >> source[i][j];
-            matr[i][j] = source[i][j];
-        }
-    }
+
+    double** A = new double* [n];
+    double** U = new double* [n];
+
+    double** A_k = new double* [n];
     double* w = new double[n];
-    double** otr = new double* [n];
-    for (int i = 0; i < n; i++)
+    double* x = new double[n];
+
+    for (int i = 0; i < n; i++) 
     {
-        otr[i] = new double[n];
-        for (int j = 0; j < n; j++)
+        A[i] = new double[n + 1];
+        A_k[i] = new double[n + 1];
+        U[i] = new double[n];
+
+        for (int j = 0; j < (n + 1); j++) 
         {
-            otr[i][j] = 0;
+            in >> A[i][j];
+            A_k[i][j] = 0;
+            if (j != n) U[i][j] = 0;
         }
     }
-    double** res = new double* [n];
-    for (int i = 0; i < n; i++)
+
+
+    double Modul = 0;
+    double p = 0;
+
+    //k-ый шаг
+    for (int k = 0; k < (n - 1); k++) 
     {
-        res[i] = new double[n + 1];
-        for (int j = 0; j < (n + 1); j++)
+
+        Modul = 0; //Ищем модуль S
+
+        for (int i = k; i < n; i++) 
         {
-            res[i][j] = 0;
-        }
-    }
-    for (int k = 0; k < (n - 1); k++) //цикл по шагам отражения
-    {
-        double d = 0;
-        for (int i = k; i < n; i++) //вычисляем скалярное произведение вектора самого на себя
-        {
-            d += matr[i][k] * matr[i][k];
+
+            Modul += A[i][k] * A[i][k];
         }
 
-        double b = sqrt(d); // длина вектора
-        if (matr[k][k] < 0)
+        Modul = sqrt(Modul);
+        if (A[k][k] < 0) 
         {
-            b = -b;
+            Modul = -Modul;
         }
-        double p = sqrt(2 * (b*b + b * matr[k][k])); 
-        for (int i = 0; i < n; i++) //вычисление вектора w
+        //Нашли
+
+        p = sqrt(2 * Modul * Modul + 2 * Modul * A[k][k]);
+
+
+        for (int i = 0; i < n; i++)
         {
-            if (i < k)
+            if (i < k) 
             {
                 w[i] = 0;
             }
-            else
+            else 
             {
-                if (i > k)
+                if (i == k) 
                 {
-                    w[i] = matr[i][k] / p;
+                    w[i] = (A[k][k] + Modul) / p;
+
                 }
-                else
-                {
-                    w[i] = (matr[k][k] + b) / p;
+                else {
+                    w[i] = A[i][k] / p; //Нашли w по определению
                 }
             }
         }
 
-        for (int i = 0; i < n; i++) //вычисляем матрицу отражений
-        {
+        for (int i = 0; i < n; i++) 
+        { //Ищем U
             for (int j = 0; j < n; j++)
-            {
-                if (i != j)
-                {
-                    otr[i][j] = -2 * w[i] * w[j];
-                }
-                else
-                {
-                    otr[i][j] = 1 - 2 * w[i] * w[j];
-                }
-            }
+                U[i][j] = -2 * w[i] * w[j] + (i == j);
         }
 
-        for (int i = 0; i < n; i++) //вычисляем otr*matr
-        {
-            for (int j = 0; j < (n + 1); j++)
+        for (int i = 0; i < n; i++) 
+        { //A k-тая
+
+            for (int j = 0; j < n + 1; j++) 
             {
-                res[i][j] = 0;
-                for (int t = 0; t < n; t++)
-                {
-                    res[i][j] = res[i][j] + otr[i][t] * matr[t][j];
+
+                A_k[i][j] = 0;
+
+                for (int l = 0; l < n; l++) {
+
+                    A_k[i][j] += U[i][l] * A[l][j];
                 }
+
             }
         }
-        for (int i = 0; i < n; i++)
-        {
-            for (int j = 0; j < (n + 1); j++)
-            {
-                matr[i][j] = res[i][j];
+        for (int i = 0; i < n; i++) {
+            for (int j = 0; j < (n + 1); j++) {
+                A[i][j] = A_k[i][j];
             }
         }
     }
 
-    for (int i = 0; i < n; i++)
-    {
-        for (int j = 0; j < (n + 1); j++)
+
+
+
+    for (int i = (n - 1); i >= 0; i--) //обратный ход методом Гаусса
+    { 
+
+        x[i] = A[i][n];
+        for (int j = (i + 1); j < n; j++) 
         {
-            cout << fixed << setprecision(8) << setw(12) << matr[i][j] << " ";
+            x[i] = x[i] - x[j] * A[i][j];
         }
-        cout << endl;
-    }
-    double* x = new double[n];
-    for (int i = (n - 1); i >= 0; i--)//находим x обратным ходом метода Гаусса
-    {
-        x[i] = matr[i][n];
-        for (int j = (i + 1); j < n; j++)
-        {
-            x[i] = x[i] - x[j] * matr[i][j];
-        }
-        x[i] = x[i] / matr[i][i];
+        x[i] = x[i] / A[i][i];
     }
 
-    for (int i = 0; i < n; i++)
-    {
-        cout << fixed << setprecision(8) << setw(12) << "X" << i << " = " << x[i] << endl;
+    cout << "Ответ выглядит так: " << endl;
+
+    for (int i = 0; i < n; i++) {
+        cout << fixed << setprecision(8) << " X(" << i << ") = " << x[i] << endl;
     }
 
-    for (int i = 0; i < n; i++)
-    {
-        delete[] source[i];
-        delete[] matr[i];
-        delete[] res[i];
-        delete[] otr[i];
-    }
-    delete[] source;
-    delete[] matr;
-    delete[] res;
-    delete[] otr;
-    delete[] w;
-    delete[] x;
-    return 0;
 }

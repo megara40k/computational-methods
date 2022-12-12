@@ -390,8 +390,6 @@ double dotProduct(double* A, double* B, int n) //скалярное произв
 
 void main()
 {
-
-
     int dimension;
     double elem, epsilon, lambdaMax;
 

@@ -8,13 +8,14 @@
 using std::cout;
 using std::cin;
 using std::endl;
-
+std::ifstream in("input.txt");
+std::ofstream out("output.txt");
 class Matrix
 {
 private:
     double** M;
     int m, n;
-   
+    double determ;
 
 public:
     Matrix() //Конструктор по умолчанию 
@@ -181,9 +182,9 @@ public:
         {
             for (size_t j = 0; j < n; j++)
             {
-                cout << std::fixed << std::setprecision(8) << GetElem(i, j) << " ";
+                out << std::fixed << std::setprecision(8) << GetElem(i, j) << " ";
             }
-            cout << endl;
+            out << endl;
         }
     }
     void print(int f, int s) //Вывод матрицы
@@ -192,11 +193,11 @@ public:
         {
             for (size_t j = 0; j < s; j++)
             {
-                if (GetElem(i, j) == 0) cout << std::fixed << std::setprecision(8) << GetElem(i, j) << " ";
-                else if (GetElem(i, j) == -0) cout << std::fixed << std::setprecision(8) << -GetElem(i, j) << " ";
-                else cout << std::fixed << std::setprecision(8) << -GetElem(i, j) << " ";
+                if (GetElem(i, j) == 0) out << std::fixed << std::setprecision(8) << GetElem(i, j) << " ";
+                else if (GetElem(i, j) == -0) out << std::fixed << std::setprecision(8) << -GetElem(i, j) << " ";
+                else out << std::fixed << std::setprecision(8) << -GetElem(i, j) << " ";
             }
-            cout << endl;
+            out << endl;
         }
     }
 
@@ -379,7 +380,7 @@ double dotProduct(double* A, double* B, int n)
 
 void main()
 {
-    std::ifstream in("input.txt");
+
     setlocale(LC_ALL, "Russian");
 
     int n;
@@ -428,7 +429,7 @@ void main()
     double stolbNorm = stolbec.norm();
     double a, b;
     int k = 0;
-//итерационный процесс
+    //итерационный процесс
     while (epsilon < (r.norm()) / (stolbNorm)) //пока относительная невязка не станет >= заданному числу
     {
         k++;
@@ -443,9 +444,12 @@ void main()
         b = (dotProduct(r(0), r(0), n)) / (dotProduct(rPrev(0), rPrev(0), n));
         z = r + zPrev * b;
     }
-
-    cout << "Ответ" << endl;
+    out << "Matrix";
+    matrix.print();
+    out << endl;
+    out << "Answer:" << endl;
     x.print();
-    cout << "Количество итераций: " << endl;
-    cout << k;
+    out << endl;
+    out << "Iterations: " ;
+    out << k;
 }

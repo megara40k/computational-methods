@@ -1,0 +1,49 @@
+#include <fstream>
+#include <iostream>
+
+using namespace std;
+ifstream fin("input.txt");
+ofstream fout("output.txt");	
+
+double lagrangeInterpolation(double x[], double fx[], int n, double xp) {
+	double intp = 0;
+	for (int i = 0; i < n; i++) {
+		double m = 1;
+		for (int j = 0; j < n; j++) {
+			if (i != j)
+				m = m * (xp - x[j]) / (x[i] - x[j]);
+		}
+		m = m * fx[i];
+		intp = intp + m;
+	}
+	return intp;
+}
+int main() {
+	int n;
+	fin >> n;//количество узлов
+	double* x = new double[n];
+	double* fx = new double[n];
+	for (int i = 0; i < n; i++) {
+		fin >> x[i];//узлы
+		fin >> fx[i];//значение в узле
+	}
+	double xp;
+	fin >> xp;//хотим найти значение в узле
+	fout << "Value of f(" << xp << ") is " << lagrangeInterpolation(x, fx, n, xp);
+}
+
+/*for input
+a)4
+  0 1 
+  0.1 1.10517
+  0.2 1.22140
+  0.3 1.34986
+  0.15
+  output: Value of f(0.15) is 1.16183
+b) 3
+0.1 1.10517
+0.2 1.22140
+0.3 1.34986
+0.15
+output: Value of f(0.15) is 1.16176
+*/
